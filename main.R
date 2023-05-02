@@ -1,13 +1,16 @@
 
 # import library ----------------------------------------------------------
 renv::hydrate(prompt = FALSE)
+install.packages('psych')
+install.packages('skimr')
 
 library('tidyverse')
 library('readxl')
 library('janitor')
 library('purrr')
 library('stringi')
-
+library('psych')
+library('skimr')
 
 # import files ------------------------------------------------------------
 getwd()
@@ -22,21 +25,12 @@ all_data <- read_xlsx('potato_iformation.xlsx')
 # action_with_tables ------------------------------------------------------------------
 
 b12_13clear <- b12_13 %>% 
- slice(-(1:4))
-
+ slice(-(1:4)) #removed the first 1.5 days in "big and sick", they were bug
 
 b14_15 <- bind_rows(b14,b15)
 
-# b18_19 %>%
-#   filter(!({
-#     timestamp %>%
-#       as.Date %>%
-#       as.character
-#   } %in% c('2022-12-05','2022-12-06', '2022-12-07')))
-
-
 b18_19 <- b18_19 %>%
-  filter( {timestamp %>% as.Date} <= as.Date('2022-12-02'))
+  filter( {timestamp %>% as.Date} <= as.Date('2022-12-02')) 
   #distinct(timestamp) %>%View()
 
 b12_19 <-  
@@ -48,14 +42,16 @@ remove(list = c('b12_13clear','b14_15','b16_17','b18_19','b14','b15','b12_13'))
 with_number <- full_join(number,b12_19,by=c('T:X:Y'='unit'))
 
 
-#final <- with_number %>% 
- # full_join(all_data, by = join_by(V.T.R == 'numbers'))
+final <- with_number %>% 
+ full_join(all_data, by = join_by(V.T.R == 'numbers')) %>% 
+  select(-treatment)
 
-#final <- left_join(with_number,all_data,by=c('V.T.R'='numbers'))
-
-#anti_join(with_number,all_data,by=c('V.T.R'='numbers')) %>% select(`T:X:Y`) %>% distinct()
-#anti_join(all_data,with_number,by=c('numbers'='V.T.R'))
 
 #write.csv(b12_19, 'b12_19.csv')
 # -------------------------------------------------------------------------
-..
+
+str(final)
+
+skimr::skim(final)
+
+
